@@ -1,5 +1,5 @@
 const { sequelize } = require("./db");
-const { Restaurant, Menu } = require("./models/index");
+const { Restaurant, Menu, Item } = require("./models/index");
 const { seedRestaurant, seedMenu } = require("./seedData");
 
 describe("Restaurant and Menu Models", () => {
@@ -76,4 +76,41 @@ describe("Restaurant and Menu Models", () => {
     expect(allMenus.length).toBe(3);
     expect(allMenus[1]).toHaveProperty("title", "Lunch");
   });
+
+  test("can create an Item", async () => {
+    const alPastorTaco = await Item.create({
+      name: "Al Pastor",
+      image: "https://images.squarespace-cdn.com/content/v1/5c6c8783523958b58c320e1b/1575321392235-NQAGWLRXVJOBKW9C277W/f_bE2EbA.jpg?format=1500w",
+      price: 5,
+      vegetarian: false
+    });
+
+    expect(alPastorTaco.name).toBe("Al Pastor");
+    expect(alPastorTaco.price).toBe(5);
+  });
+
+  test("a menu can have multiple items", async () => {
+    let lunch = await Menu.create(seedMenu[1]);
+
+    let steakQuesadilla = await Item.create({
+      name: "Steak Quesadilla",
+      image: "https://preview.redd.it/7atf7rcm7xn91.jpg?width=3024&format=pjpg&auto=webp&v=enabled&s=acc497581272c1a24afa852736d3bd156496816c",
+      price: 10,
+      vegetarian: false
+    });
+
+    let alPastorTaco = await Item.create({
+      name: "Al Pastor",
+      image: "https://images.squarespace-cdn.com/content/v1/5c6c8783523958b58c320e1b/1575321392235-NQAGWLRXVJOBKW9C277W/f_bE2EbA.jpg?format=1500w",
+      price: 5,
+      vegetarian: false
+    });
+
+    await lunch.addItems([steakQuesadilla, alPastorTaco]);
+
+    const lunchItems = await lunch.getItems();
+    expect(lunchItems.length).toBe(2);
+    expect(lunchItems[0].name).toBe("Steak Quesadilla");
+    expect(lunchItems[1].name).toBe("Al Pastor");
+  })
 });
