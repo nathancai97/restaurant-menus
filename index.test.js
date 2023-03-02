@@ -112,5 +112,37 @@ describe("Restaurant and Menu Models", () => {
     expect(lunchItems.length).toBe(2);
     expect(lunchItems[0].name).toBe("Steak Quesadilla");
     expect(lunchItems[1].name).toBe("Al Pastor");
-  })
+  });
+
+  test("eager loading menus", async () => {
+    await sequelize.sync({ force: true });
+
+    let lunch = await Menu.create(seedMenu[1]);
+
+    let steakQuesadilla = await Item.create({
+      name: "Steak Quesadilla",
+      image: "https://preview.redd.it/7atf7rcm7xn91.jpg?width=3024&format=pjpg&auto=webp&v=enabled&s=acc497581272c1a24afa852736d3bd156496816c",
+      price: 10,
+      vegetarian: false
+    });
+
+    let alPastorTaco = await Item.create({
+      name: "Al Pastor",
+      image: "https://images.squarespace-cdn.com/content/v1/5c6c8783523958b58c320e1b/1575321392235-NQAGWLRXVJOBKW9C277W/f_bE2EbA.jpg?format=1500w",
+      price: 5,
+      vegetarian: false
+    });
+
+    await lunch.addItems([steakQuesadilla, alPastorTaco]);
+
+    const menu = await Menu.findAll({
+      include: [
+        { model: Item, as: "items"}
+      ]
+    });
+
+    expect(menu[0].items.length).toBe(2);
+    expect(menu[0].items[1].price).toBe(10);
+  });
+
 });
